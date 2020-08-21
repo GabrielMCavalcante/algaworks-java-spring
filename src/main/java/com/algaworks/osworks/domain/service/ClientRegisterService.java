@@ -5,13 +5,13 @@ import org.springframework.stereotype.Service;
 
 import com.algaworks.osworks.domain.exception.BusinessException;
 import com.algaworks.osworks.domain.model.Client;
-import com.algaworks.osworks.domains.repository.ClientRepository;
+import com.algaworks.osworks.domains.repository.ClientsRepository;
 
 @Service
 public class ClientRegisterService {
 	
 	@Autowired
-	private ClientRepository clientRepository;
+	private ClientsRepository clientRepository;
 	
 	public Client save(Client client) {
 		Client existingClient = clientRepository.findByEmail(client.getEmail());
