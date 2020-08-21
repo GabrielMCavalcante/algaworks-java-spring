@@ -2,9 +2,11 @@ package com.algaworks.osworks.api.controller;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,31 +20,45 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.algaworks.osworks.api.model.ClientModel;
 import com.algaworks.osworks.domain.model.Client;
 import com.algaworks.osworks.domain.service.ClientRegisterService;
-import com.algaworks.osworks.domains.repository.ClientRepository;
+import com.algaworks.osworks.domains.repository.ClientsRepository;
 
 @RestController
 @RequestMapping("/clientes")
-public class ClientController {
+public class ClientsController {
 	
 	@Autowired
-	private ClientRepository clientRepository;
+	private ClientsRepository clientRepository;
 	
 	@Autowired
 	private ClientRegisterService clientServiceRegister;
 	
+	@Autowired
+	private ModelMapper modelMapper;
+	
+	private ClientModel toModel(Client client) {
+		return modelMapper.map(client, ClientModel.class);
+	}
+	
+	private List<ClientModel> toModelList(List<Client> clientList) {
+		return clientList.stream()
+				.map(client -> toModel(client))
+				.collect(Collectors.toList());
+	}
+	
 	@GetMapping
-	public List<Client> index() {
-		return clientRepository.findAll();
+	public List<ClientModel> index() {
+		return toModelList(clientRepository.findAll());
 	}
 	
 	@GetMapping("/{clientId}")
-	public ResponseEntity<Client> search(@PathVariable Long clientId) {
+	public ResponseEntity<ClientModel> search(@PathVariable Long clientId) {
 		Optional<Client> client = clientRepository.findById(clientId);
 		
 		if(client.isPresent()) {
-			return ResponseEntity.ok(client.get());
+			return ResponseEntity.ok(toModel(client.get()));
 		} 
 		
 		return ResponseEntity.notFound().build();
@@ -50,12 +66,12 @@ public class ClientController {
 	
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public Client create(@Valid @RequestBody Client clientData) {
-		return clientServiceRegister.save(clientData);
+	public ClientModel create(@Valid @RequestBody Client clientData) {
+		return toModel(clientServiceRegister.save(clientData));
 	}
 	
 	@PutMapping("/{clientId}")
-	public ResponseEntity<Client> update(@Valid @PathVariable Long clientId, 
+	public ResponseEntity<ClientModel> update(@Valid @PathVariable Long clientId, 
 			@RequestBody Client updateClientData) {
 		
 		if(!clientRepository.existsById(clientId)) {
@@ -65,7 +81,7 @@ public class ClientController {
 		updateClientData.setId(clientId);
 		updateClientData = clientServiceRegister.save(updateClientData);
 		
-		return ResponseEntity.ok(updateClientData);
+		return ResponseEntity.ok(toModel(updateClientData));
 	}
 	
 	@DeleteMapping("/{clientId}")
