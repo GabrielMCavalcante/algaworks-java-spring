@@ -9,6 +9,9 @@ import javax.validation.constraints.NotNull;
 public class OrderServiceInputModel {
 	
 	private class ClientID {
+		
+		public ClientID() {}
+		
 		@NotNull
 		private Long id;
 		
