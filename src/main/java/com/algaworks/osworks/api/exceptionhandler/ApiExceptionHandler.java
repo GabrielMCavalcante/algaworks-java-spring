@@ -19,6 +19,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.algaworks.osworks.domain.exception.BusinessException;
+import com.algaworks.osworks.domain.exception.EntityNotFoundException;
 
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
@@ -29,6 +30,19 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(BusinessException.class)
 	public ResponseEntity<Object> handleBusiness(BusinessException ex, WebRequest request) {
 		HttpStatus status = HttpStatus.BAD_REQUEST;
+		
+		Problem problem = new Problem();
+		
+		problem.setStatus(status.value());
+		problem.setTitle(ex.getMessage());
+		problem.setDateHour(LocalDateTime.now());
+		
+		return handleExceptionInternal(ex, problem, new HttpHeaders(), status, request);
+	}
+	
+	@ExceptionHandler(EntityNotFoundException.class)
+	public ResponseEntity<Object> handleBusiness(EntityNotFoundException ex, WebRequest request) {
+		HttpStatus status = HttpStatus.NOT_FOUND;
 		
 		Problem problem = new Problem();
 		
